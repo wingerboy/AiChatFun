@@ -7,8 +7,8 @@ from logger import log
 
 class Paper(object):
     def __init__(self,
-                 download_url,
-                 file_path=None,
+                 download_url='',
+                 file_path='',
                  key_words=['machine Learning', 'artificial intelligence']):
         self.paper_section_set = ["Abstract", 'Introduction', 'Related Work', 'Background',
                                 "Preliminary", "Problem Formulation",'Methods', 'Methodology',
@@ -18,7 +18,7 @@ class Paper(object):
                                 "Discussion", "Results and Discussion", "Conclusion",'References',
                                 'Supplementary Overview']
         self.paper_file = ''
-        if not file_path:
+        if file_path == '':
             self.paper_file = self.download_from_url(download_url)
         else:
             self.paper_file = file_path
@@ -27,11 +27,12 @@ class Paper(object):
         self.fields = key_words
         self.paper_sections = []
         self.paper_title = self._extract_title()
+        self.paper_chapters = self._extract_chapters()
         self.paper_section2text = self._extract_section_dict()
         self.paper_section2text.update({'Title': self.paper_title})
-        self.paper_section2text.update({'paper_info': f'''<Abstract> {self.paper_section2text['Abstract']}\n\n<Introduction> {self.paper_section2text['Introduction']}'''})
         self.paper_images = None
-        self.paper_author = None
+        self.paper_author = []
+        self.paper_institution = []
         self.query_text_summary = self._get_query_summary()
         self.query_text_method = self._get_query_method()
         self.query_text_conclusion = self._get_query_conclusion()
@@ -67,7 +68,7 @@ class Paper(object):
                             for word in self.paper_section_set:
                                 if cur_string.lower().find(word.lower()) < 0:
                                     continue
-                                if cur_string[cur_string.lower().find(word.lower()):] == word:
+                                if cur_string[cur_string.lower().find(word.lower()):].lower() == word.lower():
                                     self.paper_sections.append(word)
                         if abs(font_size - max_font_sizes[-1]) < 0.3 or abs(font_size - max_font_sizes[-2]) < 0.3:
                             if len(cur_string) > 4 and "arXiv" not in cur_string:
@@ -89,6 +90,27 @@ class Paper(object):
             else:
                 section_dict[self.paper_sections[ind]] = text[text.find(self.paper_sections[ind]):]
         return section_dict
+
+    def _extract_chapters(self, ):
+        digit_num = [str(d + 1) for d in range(10)]
+        roman_num = ["I", "II", 'III', "IV", "V", "VI", "VII", "VIII", "IIX", "IX", "X"]
+        text_list = [page.get_text() for page in self.paper_pdf]
+        all_text = ''
+        for text in text_list:
+            all_text += text
+        # # 创建一个空列表，用于存储章节名称
+        chapter_names = []
+        for line in all_text.split('\n'):
+            line_list = line.split(' ')
+            if '.' in line:
+                point_split_list = line.split('.')
+                space_split_list = line.split(' ')
+                if 1 < len(space_split_list) < 5:
+                    if 1 < len(point_split_list) < 5 and (
+                            point_split_list[0] in roman_num or point_split_list[0] in digit_num):
+                        chapter_names.append(line)
+
+        return chapter_names
         
     '''
     def _extract_section_dict(self):
@@ -182,9 +204,7 @@ class Paper(object):
         text += 'Title:' + self.paper_title
         text += 'Url:' + self.paper_url
         text += 'Abstrat:' + 'self.abs'
-        text += 'Paper_info:' + self.paper_section2text['paper_info']
-        # intro
-        text += list(self.paper_section2text.values())[0]
+        text += 'Introduction:' + self.paper_section2text['Introduction']
         return text
 
     def _get_query_method(self):

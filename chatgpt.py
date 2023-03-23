@@ -16,7 +16,7 @@ class ChatGPT:
         self.presence_penalty = presence_penalty
 
     def request(self, messages):
-        openai.api_key = ''
+        openai.api_key = conf.api_key
         response = openai.ChatCompletion.create(
             model=self.model,
             # prompt需要用英语替换，少占用token。
