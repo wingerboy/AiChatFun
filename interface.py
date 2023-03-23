@@ -7,7 +7,7 @@ class PaperAssistant():
     def paper_summary_chatgpt(self, paper):
         prompt = MessageGenerator()
         openai_chatgpt = ChatGPT()
-        第一步先用title，abs，和introduction进行总结。
+        # 第一步先用title，abs，和introduction进行总结。
         summary = openai_chatgpt.request(prompt.get_paper_summary_prompt(paper.fields, paper.query_text_summary))
 
         # 第二步总结方法：
