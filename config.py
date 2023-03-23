@@ -1,11 +1,12 @@
+from enum import Enum, unique
 
-
-class Config():
+@unique
+class Config(Enum):
     log_file = 'a.log'
     account = "winger"
     user_email = "test@qq.com"
 
-    api_key = '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'
+    api_key = ''
 
     ## 接口相关
     openai_max_tokens = 4096

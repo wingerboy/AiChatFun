@@ -70,7 +70,7 @@ class MessageGenerator:
                         - (3):xxx;\n  
                         - (4):xxx.\n\n     
 
-                     Be sure to use {conf.language} answers (proper nouns need to be marked in English), statements as concise and academic as possible, do not have too much repetitive information, numerical values using the original numbers, be sure to strictly follow the format, the corresponding content output to xxx, in accordance with \n line feed.                 
+                     Be sure to use {conf.output_language} answers (proper nouns need to be marked in English), statements as concise and academic as possible, do not have too much repetitive information, numerical values using the original numbers, be sure to strictly follow the format, the corresponding content output to xxx, in accordance with \n line feed.                 
                      """},
         ]
         return prompt
