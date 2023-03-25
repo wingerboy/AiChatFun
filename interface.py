@@ -13,15 +13,15 @@ class PaperAssistant():
         # 第二步总结方法：
         # TODO，由于有些文章的方法章节名是算法名，所以简单的通过关键词来筛选，很难获取，后面需要用其他的方案去优化。
         summary_method = openai_chatgpt.request(
-            prompt.get_paper_summary_prompt(paper.fields,
+            prompt.get_paper_method_prompt(paper.fields,
                                             f"<Summary> {summary}, " + paper.query_text_method))
 
         # 第三步总结全文，并打分：
         summary_method_cons = openai_chatgpt.request(
-            prompt.get_paper_summary_prompt(paper.fields,
+            prompt.get_paper_conclusion_prompt(paper.fields,
                                             f"<Summary> {summary}, \n\n<Method Summary> {summary_method}\n\n " + paper.query_text_conclusion))
 
-        data = [summary, "\n"*4, summary_method, "\n"*4, summary_method_cons]
+        data = [summary, "\n", summary_method, "\n", summary_method_cons]
         return "\n".join(data)
 
 
