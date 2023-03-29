@@ -37,4 +37,4 @@ class Logger:
         self.logger.error(message)
 
 
-log = Logger(log_file=conf.log_file, level=logging.DEBUG, extra_info=f"[{conf.account} & {conf.user_email}]")
+log = Logger(log_file=conf.log_file, level=logging.INFO, extra_info=f"[{conf.account} & {conf.user_email}]")
