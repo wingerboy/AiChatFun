@@ -39,7 +39,7 @@ class Paper(object):
         log.debug(f"paper_title: {self.paper_title},\n "
                 f"paper_sections: {self.paper_sections},\n "
                 f"paper_chapters: {self.paper_chapters},\n "
-                f"paper_section2text: {self.paper_section2text.keys()},\n "
+                f"paper_section2text: {self.paper_section2text.keys()},\n ")
         self.paper_pdf.close()
 
     def _extract_title(self):
