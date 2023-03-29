@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 @app.route('/request_paper_summary', methods=['GET', 'POST'])
 def paper_summary():
-    res = {'ret'=-1, 'data'="", 'msg'=''}
+    res = {'ret': -1, 'data': "", 'msg': ''}
     if request.method == 'POST':
         api_key = request.form.get('apiKey', '')
         paper_link = request.form.get('link', '')
