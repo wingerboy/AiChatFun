@@ -1,5 +1,6 @@
 from flask import Flask, request
 from chatgpt import ChatGPT, MessageGenerator
+from interface import PaperAssistant
 from paper import Paper
 from logger import log
 
