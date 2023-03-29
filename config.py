@@ -1,8 +1,8 @@
-from enum import Enum, unique
+# from enum import Enum, unique
 
-@unique
-class Config(Enum):
-    log_file = 'a.log'
+# @unique
+class Config():
+    log_file = 'run.log'
     account = "winger"
     user_email = "test@qq.com"
 
