@@ -98,6 +98,8 @@
         .index_contain_right{
             width: 45%;
             height: 90%;
+            overflow: auto;
+            display: block;
             border: 1px solid #000;
         }
     }
