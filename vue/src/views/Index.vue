@@ -44,7 +44,10 @@
             <textarea class="iclc_textarea"></textarea>
           </div>
           <div class="iclc_file">
-            <div class="iclc_file_btn">文件上传</div>
+            <div
+              class="iclc_file_btn"
+              @click="upload"
+            >文件上传</div>
             <el-input
               class="iclc_file_input"
               v-model="link"
@@ -59,6 +62,11 @@
       </div>
       <div class="index_contain_right">{{result}}</div>
     </div>
+    <input
+      v-show="false"
+      id="files"
+      type="file"
+    />
   </div>
 </template>
 <script>
@@ -73,6 +81,8 @@ export default {
       modelType: "1",
       //参数
       prompt: "",
+      //上传文件
+      fileName: "",
       topk: 30,
       tem: 30,
       //链接
@@ -97,6 +107,8 @@ export default {
         modelType: this.modelType,
         //参数
         prompt: this.prompt,
+        //上传文件
+        fileName: this.fileName,
         topk: this.topk / 100,
         tem: this.tem / 100,
         //链接
@@ -108,11 +120,43 @@ export default {
           console.log(res);
           this.result = res.data.data;
         })
-        .catch((err) => [console.log(err)]);
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    //触发上传
+    upload() {
+      document.getElementById("files").click();
+    },
+    //处理文件
+    handleFiles() {
+      var selectedFile = document.getElementById("files").files[0]; //获取读取的File对象
+      console.log(selectedFile);
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      this.axios
+        .post("上传的Url", formData, {
+          "Content-type": "multipart/form-data",
+        })
+        .then((res) => {
+          console.log(res);
+          this.fileName = res.data.data;
+          this.$message({
+            message: "上传成功",
+            type: "success",
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          this.$message.error("上传失败" + err);
+        });
     },
   },
   components: {},
-  mounted() {},
+  mounted() {
+    var inputElement = document.getElementById("files");
+    inputElement.addEventListener("change", this.handleFiles, false);
+  },
 };
 </script>
 <style lang="scss">
