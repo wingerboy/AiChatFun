@@ -4,10 +4,12 @@ from interface import PaperAssistant
 from paper import Paper
 from logger import log
 from config import conf
+import time
 
 
 app = Flask(__name__)
 app.config['TIMEOUT'] = 200000 # 如果是Flask（python app.py启动）-生效。 如果是Django（gunicorn启动）-为gunicorn配置文件timeout
+app.config['UPLOAD_FOLDER'] = '/root/github/AiChatFun/upload/'
 
 @app.route('/request_paper_summary', methods=['GET', 'POST'])
 def paper_summary():
@@ -34,6 +36,30 @@ def paper_summary():
     else:
         res['msg'] = 'Get request not allowed'
         return jsonify(res)
+
+
+@app.route('/request_paper_upload', methods=['POST'])
+def paper_upload():
+    res = {'ret': -1, 'data': "", 'msg': ''}
+    # 检查请求是否包含文件
+    if 'file' not in request.files:
+        res['msg'] = 'No file uploaded'
+        return jsonify(res)
+
+    # 从请求中获取文件对象
+    uploaded_file = request.files['file']
+    filename = uploaded_file.filename
+    
+    # 将文件保存到指定目录中
+    filename = filename + '_' + conf.account + '_' + str(int(time.time()))
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    print("filepath:", filepath)
+    file.save(filepath)
+    res['msg'] = 'File uploaded successfully'
+    res['data'] = filepath
+    
+    # 响应客户端请求
+    return jsonify(res)
 
 
 if __name__ == '__main__':
