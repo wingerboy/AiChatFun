@@ -32,13 +32,17 @@ def download_from_url(url):
     """
     # paper_url = "https://arxiv.org/pdf/2303.12060.pdf"
     target_name = conf.account + '_upload_' + str(int(time.time())) + '.pdf'
-    target_path = os.path.join(conf.upload_dir, filename)
-    res = requests.get(url=url)
-    if res.status_code == 200:
-        with open(target_path, "wb") as f:
-            f.write(res.content)
-            return target_path
-    return ''
+    target_path = os.path.join(conf.upload_dir, target_name)
+    try:
+        res = requests.get(url=url)
+        if res.status_code == 200:
+            with open(target_path, "wb") as f:
+                f.write(res.content)
+                return 0, target_path
+        return -1, ''
+    except Exception as e:
+        log.error(f'Input paper url error, {e}')
+        return -1, e
 
 
 @app.route('/request_paper_summary', methods=['GET', 'POST'])
@@ -52,17 +56,18 @@ def paper_summary():
         conf.api_key = api_key
         log.info(f'input parameter, api_key: {api_key}, paper_upload: {paper_uploaded}, paper_link: {paper_link}')
         if api_key == '':
-            res['msg'] = 'Please input your API KEY')
+            res['msg'] = 'Please input your API KEY'
             return jsonify(res)
 
         paper_file = ''
         if paper_uploaded == '':
-            paper_file = download_from_url(paper_link)
+            res['ret'], paper_file = download_from_url(paper_link)
         else:
             paper_file = paper_uploaded
+            res['ret'] = 0 if os.path.exists(paper_file) else -1
 
-        if not os.path.exists(paper_file) :# 文件为空
-            res['msg'] = 'Please upload file or input paper link')
+        if res['ret'] == -1 or not os.path.exists(paper_file) :# 文件为空
+            res['msg'] = 'Please upload file or input paper link'
             return jsonify(res)
 
         try:
