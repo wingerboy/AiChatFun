@@ -135,7 +135,7 @@ export default {
       const formData = new FormData();
       formData.append("file", selectedFile);
       this.axios
-        .post("上传的Url", formData, {
+        .post("/api/request_paper_upload", formData, { //上传的Url
           "Content-type": "multipart/form-data",
         })
         .then((res) => {

@@ -13,5 +13,7 @@ class Config():
     limit_max_tokens = 1000
     output_language = 'chinese'
 
+    upload_dir = '/root/github/AiChatFun/upload/'
+
 
 conf = Config()
