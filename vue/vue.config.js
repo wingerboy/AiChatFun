@@ -5,7 +5,7 @@ const proxy = require('http-proxy-middleware');
 
 module.exports = {
   lintOnSave: true,
-
+  runtimeCompiler: true,
   devServer: {
     port: 7000, // 端口号
     host: "localhost",

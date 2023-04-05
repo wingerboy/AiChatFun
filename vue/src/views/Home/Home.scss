@@ -1,0 +1,46 @@
+.index{
+	width: 100%;
+	overflow: auto;
+	&-contain{
+		width: 800px;
+		margin: 150px auto;
+		height: 510px;
+		border: 1px solid #000;
+		border-radius: 30px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		&-left{
+			width: 25%;
+			height: 95%;
+			margin-right: 2%;
+			position: relative;
+			&-title {
+				margin-bottom: 10px;
+			}
+			&-content {
+				height: 250px;
+			}
+			.iclc-card {
+				padding: 10px 0;
+			}
+			.iclc_textarea{
+				margin-top: 10px;
+				width: 98%;
+				height: 144px;
+			}
+			.iclc-file-input{
+				width: 150px;
+				margin-left: 10px;
+			}
+		}
+		&-right {
+			width: 500px;
+			height: 450px;
+			padding: 10px;
+			overflow-y: scroll;
+			border-radius: 4px;
+			border: 1px solid #DCDFE6;
+		}
+	}
+}
