@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from chatgpt import ChatGPT, MessageGenerator
 from interface import PaperAssistant
 from paper import Paper
@@ -8,7 +8,7 @@ import time
 import os
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 app.config['TIMEOUT'] = 200000 # 如果是Flask（python app.py启动）-生效。 如果是Django（gunicorn启动）-为gunicorn配置文件timeout
 app.config['UPLOAD_FOLDER'] = conf.upload_dir
 
@@ -43,6 +43,11 @@ def download_from_url(url):
     except Exception as e:
         log.error(f'Input paper url error, {e}')
         return -1, e
+
+
+@app.route('/')
+def index():
+    return render_template('./dist/index.html')
 
 
 @app.route('/request_paper_summary', methods=['GET', 'POST'])
