@@ -31,6 +31,8 @@ def download_from_url(url):
         论文下载结果。成功则返回本地文件路径，失败则返回None
     """
     # paper_url = "https://arxiv.org/pdf/2303.12060.pdf"
+    os.makedirs(conf.upload_dir, exist_ok=True)
+
     target_name = conf.account + '_download_' + str(int(time.time())) + '.pdf'
     target_path = os.path.join(conf.upload_dir, target_name)
     try:
@@ -121,6 +123,3 @@ if __name__ == '__main__':
 
 # 启动命令 gunicorn -c gunicorn_config.py app:app
 
-
-
-index-page

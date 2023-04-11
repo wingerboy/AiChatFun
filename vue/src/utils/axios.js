@@ -20,7 +20,7 @@ export function fetchApi(option) {
 			option.withCredentials !== undefined ? option.withCredentials : true,
 		crossDomain: true,
 		xDomain: true,
-		timeout: option.timeout || 6000,
+		timeout: option.timeout || 600000,
 	}
 
 	if (axiosAttribute.method === 'POST') {
