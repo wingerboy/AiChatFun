@@ -291,7 +291,7 @@ class Paper(object):
 
 
 if __name__ == "__main__":
-    paper = Paper("https://arxiv.org/pdf/2303.12060.pdf", 'test.pdf')
+    paper = Paper("https://arxiv.org/pdf/2303.00995.pdf")
     print(paper.paper_sections)
     print(paper.paper_section2text.keys())
 

@@ -4,4 +4,4 @@ const apiHostMap = {
   online: "http://43.153.81.198",
 };
 
-export default apiHostMap["online"];
+export default apiHostMap["online"]; // 本地测试/线上部署：qa/online

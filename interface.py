@@ -27,4 +27,5 @@ class PaperAssistant():
 
 if __name__ == "__main__":
 
-    print(PaperAssistant().paper_summary_chatgpt(Paper(file_path='test.pdf')))
+    # print(PaperAssistant().paper_summary_chatgpt(Paper(file_path='test.pdf')))
+    print(PaperAssistant().paper_summary_chatgpt(Paper(download_url='https://arxiv.org/pdf/2303.00995.pdf')))
