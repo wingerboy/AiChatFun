@@ -3,16 +3,16 @@
 	overflow: auto;
 	&-contain{
 		width: 800px;
-		margin: 150px auto;
-		height: 510px;
+		margin: 90px auto;
+		height: 590px;
 		border: 1px solid #000;
 		border-radius: 30px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		&-left{
-			width: 25%;
-			height: 95%;
+			width: 200px;
+			height: 530px;
 			margin-right: 2%;
 			position: relative;
 			&-title {
@@ -30,13 +30,13 @@
 				height: 144px;
 			}
 			.iclc-file-input{
-				width: 150px;
-				margin-left: 10px;
+				width: 200px;
+				margin-top: 10px;
 			}
 		}
 		&-right {
 			width: 500px;
-			height: 450px;
+			height: 510px;
 			padding: 10px;
 			overflow-y: scroll;
 			border-radius: 4px;

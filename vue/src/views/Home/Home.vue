@@ -36,10 +36,12 @@
 			</div>
 		</div>
 		<input v-show="false" id="files" type="file" />
+		<Sliderbar />
 	</div>
 </template>
 <script>
 import api from '../../api';
+import Sliderbar from '../../components/Sliderbar/Sliderbar.vue';
 export default {
 	name: 'Home',
 	data() {
@@ -146,7 +148,9 @@ export default {
 			console.log(tab, event);
 		}
 	},
-	components: {},
+	components: {
+		Sliderbar
+	},
 	mounted() {
 		const inputElement = document.getElementById("files");
 		inputElement.addEventListener("change", this.handleFiles, false);
