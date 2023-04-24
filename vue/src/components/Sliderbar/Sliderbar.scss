@@ -1,0 +1,29 @@
+.sliderbar {
+    &-content {
+        position: fixed;
+        right: 10px;
+        top: 50%;
+        height: 88px;
+        width: 48px;
+        .el-icon-phone-outline {
+            font-size: 40px;
+            margin: 4px;
+        }
+        &-text {
+            font-size: 12px;
+            line-height: 12px;
+            margin: 0;
+            padding: 10px 0;
+        }
+    }
+    &-hover {
+        position: fixed;
+        right: 68px;
+        top: calc(50% - 40px);
+        &-img {
+            height: 150px;
+            width: 150px;
+        }
+       
+    }
+}
