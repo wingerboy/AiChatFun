@@ -5,7 +5,7 @@
             <p class="sliderbar-content-text">联系我们</p>
         </div>
         <div v-show="hoverValue" class="sliderbar-hover">
-            <img class="sliderbar-hover-img" src="../../../public/image/WeChat.png"/>
+            <img class="sliderbar-hover-img" src="../../../public/image/WeChat.jpg"/>
         </div>
     </div>
 </template>
