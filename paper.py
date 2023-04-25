@@ -1,4 +1,5 @@
 import fitz
+import re
 import tiktoken
 from PIL import Image
 from config import conf
@@ -16,28 +17,35 @@ class Paper(object):
                                 "Experiment Settings", "Experiment", "Experimental Results",
                                 "Evaluation", "Experiments","Results", 'Findings', 'Data Analysis',
                                 "Discussion", "Results and Discussion", "Conclusion",'References',
-                                'Supplementary Overview']
+                                'Supplementary Overview', 'Keywords', 'Key Words']
         self.paper_file = ''
         if file_path == '':
             self.paper_file = self.download_from_url(download_url)
         else:
             self.paper_file = file_path
+        self.msg = {'ret': 0, 'msg': []}
         self.paper_pdf = fitz.open(self.paper_file)
         self.paper_url = download_url
         self.fields = key_words
         self.paper_sections = []
         self.paper_title = self._extract_title()
         self.paper_chapters = self._extract_chapters()
+
         self.paper_section2text = self._extract_section_dict()
         self.paper_section2text.update({'Title': self.paper_title})
         self.paper_images = None
         self.paper_author = []
         self.paper_institution = []
+        self.paper_abstract = ''
+        self.paper_introduction = ''
+        self.paper_method = ''
+        self.paper_conclusion = ''
+        self.paper_related_work = ''
+        self._paper_chapters_alignment()
         self.query_text_summary = self._get_query_summary()
         self.query_text_method = self._get_query_method()
         self.query_text_conclusion = self._get_query_conclusion()
         log.debug(f"paper_title: {self.paper_title},\n "
-                f"paper_sections: {self.paper_sections},\n "
                 f"paper_chapters: {self.paper_chapters},\n "
                 f"paper_section2text: {self.paper_section2text.keys()},\n ")
         self.paper_pdf.close()
@@ -83,18 +91,144 @@ class Paper(object):
         title = cur_title.replace('\n', ' ')
         return title
 
+    def _paper_chapters_alignment(self,):
+        result = ''
+        has_method = False
+        unknow_sec = []
+        for sec in self.paper_chapters:
+            if 'abstract' in sec.lower():
+                self.paper_abstract = self.paper_section2text[sec]
+            if 'introduction' in sec.lower():
+                self.paper_introduction = self.paper_section2text[sec]
+            if 'related work' in sec.lower():
+                self.paper_related_work = self.paper_section2text[sec]
+            if 'method' in sec.lower() or 'methodology' in sec.lower() or 'approach' in sec.lower():
+                has_method = False
+                self.paper_method = self.paper_section2text[sec]
+            if 'conclusion' in sec.lower():
+                self.paper_conclusion = self.paper_section2text[sec]
+            if 'result' in sec.lower() or 'discuss' in sec.lower():
+                result = self.paper_section2text[sec]
+
+            sec_tmp = re.sub(r'^(I{1,3}|IV|V|VI{1,3}|IIX|IX|X)+|\.', '', re.sub(r'\d+|\.', '', sec)).strip().title()
+            if sec_tmp not in self.paper_section_set:
+                unknow_sec.append(sec)
+
+        if len(unknow_sec) > 0 and len(self.paper_method) < 10:
+            self.paper_method = '\n'.join([self.paper_section2text[s] for s in unknow_sec])
+        
+        self.paper_conclusion = result + '\n' + self.paper_conclusion
+
+        if len(self.paper_abstract) < 10:
+            self.msg['msg'].append("can't extract abstract! ")  
+        if len(self.paper_introduction) < 10:
+            self.msg['msg'].append("can't extract paper introduction! ")   
+        if len(self.paper_related_work) < 10:
+            self.msg['msg'].append("can't extract paper related work! ")  
+        if len(self.paper_method) < 10:
+            self.msg['msg'].append("can't extract paper method! ")  
+        if len(self.paper_conclusion) < 10:
+            self.msg['msg'].append("can't extract paper conclusion! ")         
+
     def _extract_section_dict(self):
         section_dict = {}
         text = ""
         for page in self.paper_pdf:
             text += page.get_text()
-        for ind in range(len(self.paper_sections)):
-            if ind < len(self.paper_sections)-1:
-                section_dict[self.paper_sections[ind]] = text[text.find(self.paper_sections[ind]):text.find(self.paper_sections[ind+1])]
+        text = text.replace("\n", " ")
+        for ind in range(len(self.paper_chapters)):
+            if ind < len(self.paper_chapters)-1:
+                section_dict[self.paper_chapters[ind]] = text[text.find(self.paper_chapters[ind]):text.find(self.paper_chapters[ind+1])]
             else:
-                section_dict[self.paper_sections[ind]] = text[text.find(self.paper_sections[ind]):]
+                section_dict[self.paper_chapters[ind]] = text[text.find(self.paper_chapters[ind]):]
+        
+        # print("section_dict list extract from paper: ", section_dict.keys())
         return section_dict
 
+    def _extract_chapters(self, ):
+        h1_examples = 'INTRODUCTION'
+        h1_list = []
+        digit_num = [str(d + 1) for d in range(10)]
+        roman_num = ["I", "II", 'III', "IV", "V", "VI", "VII", "VIII", "IIX", "IX", "X"]
+        intro_h1 = ''
+        intro_font = ''
+        intro_font_size = 0
+        has_intro = False
+        for page_index, page in enumerate(self.paper_pdf):  # 遍历每一页
+            text = page.get_text("dict")  # 获取页面上的文本信息
+            blocks = text["blocks"]  # 获取文本块列表
+            # 寻找INTRODUCTION
+            for block in blocks:  # 遍历每个文本块
+                if block["type"] == 0 and len(block['lines']):  # 如果是文字类型
+                    if len(block["lines"][0]["spans"]):
+                        block_text = ' '.join([l["spans"][0]["text"] for l in block["lines"]])
+                        for line in block["lines"]:
+                            line_text = line["spans"][0]["text"]
+                            line_font = line["spans"][0]["font"]
+                            line_font_size = line["spans"][0]["size"]
+                            if h1_examples == line_text.upper():
+                                intro_font = line_font
+                                intro_font_size = line_font_size
+                                has_intro = True
+                            if has_intro:break
+                        if has_intro:break
+            if has_intro:break
+        if intro_font_size == 0:
+            self.msg['ret'] = -1
+            self.msg['msg'].append("can't find introduction !")
+            return []
+        # print(intro_font, intro_font_size)
+        # 遍历寻找和inrtoduction相同字体和大小的标题
+        for page_index, page in enumerate(self.paper_pdf):  # 遍历每一页
+            text = page.get_text("dict")  # 获取页面上的文本信息
+            blocks = text["blocks"]  # 获取文本块列表
+            for block in blocks:  # 遍历每个文本块
+                if block["type"] == 0 and len(block['lines']):  # 如果是文字类型
+                    if len(block["lines"][0]["spans"]) > 0: 
+                        h1_text = ' '.join([l["spans"][0]["text"] for l in block["lines"] if (len(l["spans"]) > 0 and l["spans"][0]["font"]==intro_font and l["spans"][0]["size"]==intro_font_size)])
+                        if len(h1_text) > 0:
+                            h1_list.append(h1_text)
+
+        # print(h1_list)
+        # 清除一些脏数据
+        intro_h1 = [h for h in h1_list if h1_examples in h.upper()][0]   
+        pattern = ''
+        if re.match(r'^\d\. {0,2}[A-Z].*$', intro_h1):
+            pattern = r'^\d\. {0,2}[A-Z].*$'
+        elif re.match(r'^\d  {0,2}[A-Z].*$', intro_h1):
+            pattern = r'^\d  {0,2}[A-Z].*$'
+        elif re.match(r'^(I{1,3}|IV|V|VI{1,3}|IIX|IX|X)\. {0, 2}[A-Z].*$', intro_h1):
+            pattern = r'^(I{1,3}|IV|V|VI{1,3}|IIX|IX|X)\. {0, 2}[A-Z].*$'
+        elif re.match(r'^(I{1,3}|IV|V|VI{1,3}|IIX|IX|X) {1, 2}[A-Z].*$', intro_h1):
+            pattern = r'^(I{1,3}|IV|V|VI{1,3}|IIX|IX|X) {1, 2}[A-Z].*$'
+        else:
+            self.msg['ret'] = -1
+            self.msg['msg'].append("Can't match string pattern !")
+            return []
+
+        h1_list_new = []
+        for h in h1_list:
+            if 'abstract' in h.lower():
+                h1_list_new.append(h)
+            elif 'keywords' in h.lower() or 'key words' in h.lower():
+                h1_list_new.append(h)
+            elif 'acknowledgments' in h.lower():
+                h1_list_new.append(h)       
+            elif 'references' in h.lower():
+                h1_list_new.append(h)
+            elif re.match(pattern, h) is not None:
+                h1_list_new.append(h)
+            else:
+                continue
+
+        if 'abstract' not in ' '.join(h1_list_new).lower():
+            h1_list_new.insert(0, 'Abstract')
+
+        log.info(f"h1 list extract from paper: {h1_list_new}")
+        # print("h1 list extract from paper: ", h1_list_new)
+        return h1_list_new
+
+    '''
     def _extract_chapters(self, ):
         digit_num = [str(d + 1) for d in range(10)]
         roman_num = ["I", "II", 'III', "IV", "V", "VI", "VII", "VIII", "IIX", "IX", "X"]
@@ -115,6 +249,8 @@ class Paper(object):
                         chapter_names.append(line)
 
         return chapter_names
+
+    '''
         
     '''
     def _extract_section_dict(self):
@@ -207,8 +343,8 @@ class Paper(object):
         text = ''
         text += 'Title:' + self.paper_title
         text += 'Url:' + self.paper_url
-        text += 'Abstrat:' + 'self.abs'
-        text += 'Introduction:' + self.paper_section2text['Introduction']
+        text += 'Abstrat:' + self.paper_abstract
+        text += 'Introduction:' + self.paper_introduction
         return text
 
     def _get_query_method(self):
@@ -216,13 +352,8 @@ class Paper(object):
         通过论文的
         :return:
         '''
-        method_key = ''
-        for parse_key in self.paper_section2text.keys():
-            if 'method' in parse_key.lower() or 'approach' in parse_key.lower():
-                method_key = parse_key
-                break
 
-        method_text = "\n\n<Methods>:\n\n" + self.paper_section2text[method_key]
+        method_text = "\n\n<Methods>:\n\n" + self.paper_conclusion
         return method_text
 
     def _get_query_conclusion(self):
@@ -230,17 +361,8 @@ class Paper(object):
         通过论文的
         :return:
         '''
-        text = ''
-        conclusion_key = ''
-        for parse_key in self.paper_section2text.keys():
-            if 'conclu' in parse_key.lower():
-                conclusion_key = parse_key
-                break
 
-        if conclusion_key != '':
-            # conclusion
-            conclusion_text = self.paper_section2text[conclusion_key]
-            text = "\n\n<Conclusion>:\n\n" + conclusion_text
+        text = "\n\n<Conclusion>:\n\n" + self.paper_conclusion
         return text
 
     def download_from_url(self, url, target_name="test.pdf"):
@@ -291,11 +413,28 @@ class Paper(object):
 
 
 if __name__ == "__main__":
-    paper = Paper("https://arxiv.org/pdf/2303.00995.pdf")
-    print(paper.paper_sections)
-    print(paper.paper_section2text.keys())
+    import argparse
 
-    print(paper.paper_section2text['Methodology'])
-    # for k, v in paper.paper_section2text.items():
-    #     print(f">>>>>>>>>>>>>>>{k}>>>>>>>>>>>>>")
-    #     print(v)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--file', default='', required=False)    # 位置参数
+    parser.add_argument('--url', default='', required=False)  # 可选参数
+
+    args = parser.parse_args()
+
+    paper = None
+    if args.file == '' and args.url == '':
+        print("please input param! ")
+        Paper(file_path="/Users/wingerliu/Downloads/github/test/1909.03184.pdf")
+    elif args.file == '':
+        paper = Paper(download_url=args.url)
+    else:
+        paper = Paper(file_path=args.file)
+    
+    print(">>>>>Title: ", paper.paper_title)
+    print(">>>>>Paper Chapters: ", paper.paper_chapters)
+    print(">>>>>Paper keys: ", paper.paper_section2text.keys())
+    print(">>>>>Paper msg: ", paper.msg)
+
+    print(">>>>>Paper abstract: ", paper.paper_abstract)
+
+    
