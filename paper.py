@@ -343,6 +343,7 @@ class Paper(object):
         text = ''
         text += 'Title:' + self.paper_title
         text += 'Url:' + self.paper_url
+        text += 'Paper Chapters:' + ','.join(self.paper_chapters)
         text += 'Abstrat:' + self.paper_abstract
         text += 'Introduction:' + self.paper_introduction
         return text
